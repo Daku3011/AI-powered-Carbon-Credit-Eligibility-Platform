@@ -1,0 +1,50 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "manager",
+  "instructions": ["AGENTS.md", "PROJECT.md", "TASK_BOARD.md"],
+  "skills": {
+    "paths": [".opencode/skills"]
+  },
+  "agent": {
+    "manager": {
+      "description": "Monitors tasks/todo, assigns work to workers, tracks progress through doing to done.",
+      "mode": "primary",
+      "permission": {
+        "edit": { "*.md": "allow", "*": "deny" },
+        "bash": { "git *": "allow", "npm *": "allow", "python *": "allow", "*": "ask" }
+      }
+    },
+    "worker-m3": {
+      "description": "Implements M3: AI OCR (Gemini API) and RAG chatbot (numpy TF-IDF). Backend services, API routers, schemas.",
+      "mode": "subagent",
+      "permission": {
+        "edit": "allow",
+        "bash": { "python *": "allow", "pip *": "allow", "pytest *": "allow", "*": "ask" }
+      }
+    },
+    "worker-m4": {
+      "description": "Implements M4: PDF (ReportLab) and Excel (openpyxl) report generation. Export endpoints and file streaming.",
+      "mode": "subagent",
+      "permission": {
+        "edit": "allow",
+        "bash": { "python *": "allow", "pip *": "allow", "pytest *": "allow", "*": "ask" }
+      }
+    },
+    "worker-m5": {
+      "description": "Implements M5: Next.js frontend UI, dashboard, calculator page, marketplace, chatbot page. Tailwind + shadcn/ui.",
+      "mode": "subagent",
+      "permission": {
+        "edit": "allow",
+        "bash": { "npm *": "allow", "npx *": "allow", "node *": "allow", "*": "ask" }
+      }
+    },
+    "docs-engineer": {
+      "description": "Maintains README, API docs, architecture guides, deployment docs, developer onboarding, and examples. Keeps docs synchronized with code.",
+      "mode": "subagent",
+      "permission": {
+        "edit": { "*.md": "allow", "*.txt": "allow", "*.json": "allow", "*": "deny" },
+        "bash": { "git *": "allow", "*": "ask" }
+      }
+    }
+  }
+}

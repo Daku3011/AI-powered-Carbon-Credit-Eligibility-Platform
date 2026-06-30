@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Download, TrendingDown, Leaf, IndianRupee } from "lucide-react";
+import { ArrowLeft, Download, TrendingDown, Leaf, IndianRupee, Activity, Calendar } from "lucide-react";
 import { calculateScore, exportReport, type ScoreRequest, type ScoreResponse } from "@/lib/api";
 
 export default function CalculatorResultsPage() {
@@ -61,18 +61,20 @@ export default function CalculatorResultsPage() {
 
   if (loading) {
     return (
-      <div className="container py-8 text-center">
-        <p className="text-muted-foreground">Calculating emissions...</p>
+      <div className="container py-8 text-center max-w-lg mx-auto py-32 space-y-4">
+        <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-neutral-500 dark:text-neutral-400 font-medium">Analyzing facility footprint and generating Decarbonization model...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container py-8 text-center">
-        <p className="text-destructive mb-4">Error: {error}</p>
+      <div className="container py-8 text-center max-w-md mx-auto py-32 space-y-4">
+        <p className="text-red-500 font-bold">Calculation Failed</p>
+        <p className="text-sm text-neutral-500">{error}</p>
         <Link href="/calculator">
-          <Button variant="outline">
+          <Button variant="outline" className="cursor-pointer">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Calculator
           </Button>
@@ -83,10 +85,10 @@ export default function CalculatorResultsPage() {
 
   if (!result || !input) {
     return (
-      <div className="container py-8 text-center">
-        <p className="text-muted-foreground mb-4">No calculation data found.</p>
+      <div className="container py-8 text-center max-w-md mx-auto py-32 space-y-4">
+        <p className="text-neutral-500 dark:text-neutral-400 mb-4">No active calculation record found.</p>
         <Link href="/calculator">
-          <Button>
+          <Button className="cursor-pointer">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Start New Calculation
           </Button>
@@ -97,157 +99,200 @@ export default function CalculatorResultsPage() {
 
   const { eligibility_score: score, roadmap } = result;
 
+  // Extract scope_3 if present in result, or default to 0.0
+  const scope_3 = (result as unknown as { scope_3_emissions_tco2e?: number }).scope_3_emissions_tco2e ?? 0.0;
+
   return (
-    <div className="container py-8 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Results</h1>
-        <div className="flex gap-2">
+    <div className="container py-8 max-w-4xl mx-auto space-y-8">
+      {/* Header controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-neutral-200 dark:border-neutral-800 pb-6">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-neutral-100">
+            Calculation Results
+          </h1>
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+            Audited results for your {input.industry} facility.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             onClick={() => handleExport("pdf")}
             disabled={exporting === "pdf"}
+            className="cursor-pointer border-neutral-300 dark:border-neutral-700 h-10 px-4 flex items-center gap-1.5"
           >
-            <Download className="mr-2 h-4 w-4" />
-            {exporting === "pdf" ? "Exporting..." : "Export PDF"}
+            <Download className="h-4 w-4" />
+            {exporting === "pdf" ? "Generating PDF..." : "Export PDF"}
           </Button>
           <Button
             variant="outline"
             onClick={() => handleExport("xlsx")}
             disabled={exporting === "xlsx"}
+            className="cursor-pointer border-neutral-300 dark:border-neutral-700 h-10 px-4 flex items-center gap-1.5"
           >
-            <Download className="mr-2 h-4 w-4" />
-            {exporting === "xlsx" ? "Exporting..." : "Export Excel"}
+            <Download className="h-4 w-4" />
+            {exporting === "xlsx" ? "Generating Sheet..." : "Export Excel"}
           </Button>
           <Link href="/calculator">
-            <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              New Calculation
+            <Button variant="outline" className="cursor-pointer border-neutral-300 dark:border-neutral-700 h-10 px-4">
+              <ArrowLeft className="mr-1.5 h-4 w-4" />
+              New Run
             </Button>
           </Link>
         </div>
       </div>
 
-      {/* Emissions Summary */}
-      <div className="grid gap-4 md:grid-cols-3 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Scope 1 Emissions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{result.scope_1_emissions_tco2e} tCO2e</div>
-            <p className="text-xs text-muted-foreground">Direct emissions (fuel combustion)</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Scope 2 Emissions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{result.scope_2_emissions_tco2e} tCO2e</div>
-            <p className="text-xs text-muted-foreground">Indirect emissions (electricity)</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Emissions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{result.total_emissions_tco2e} tCO2e</div>
-            <p className="text-xs text-muted-foreground">Combined carbon footprint</p>
-          </CardContent>
-        </Card>
+      {/* Grid of Emissions */}
+      <div>
+        <h2 className="text-lg font-bold text-neutral-800 dark:text-neutral-200 mb-4 flex items-center gap-2">
+          <Activity className="h-5 w-5 text-emerald-500" />
+          Carbon Footprint Breakdown
+        </h2>
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          <Card className="border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-md">
+            <CardHeader className="p-4 pb-2">
+              <CardDescription className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Scope 1 (Direct)</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <div className="text-xl font-bold text-neutral-800 dark:text-neutral-100">{result.scope_1_emissions_tco2e} <span className="text-xs font-normal text-neutral-400">tCO2e</span></div>
+              <p className="text-[10px] text-neutral-400 mt-1">Diesel & fuel combustion</p>
+            </CardContent>
+          </Card>
+          <Card className="border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-md">
+            <CardHeader className="p-4 pb-2">
+              <CardDescription className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Scope 2 (Indirect)</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <div className="text-xl font-bold text-neutral-800 dark:text-neutral-100">{result.scope_2_emissions_tco2e} <span className="text-xs font-normal text-neutral-400">tCO2e</span></div>
+              <p className="text-[10px] text-neutral-400 mt-1">Purchased grid electricity</p>
+            </CardContent>
+          </Card>
+          <Card className="border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-md">
+            <CardHeader className="p-4 pb-2">
+              <CardDescription className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">Scope 3 (Waste)</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <div className="text-xl font-bold text-neutral-800 dark:text-neutral-100">{scope_3} <span className="text-xs font-normal text-neutral-400">tCO2e</span></div>
+              <p className="text-[10px] text-neutral-400 mt-1">Solid waste landfill methane</p>
+            </CardContent>
+          </Card>
+          <Card className="border-neutral-200 dark:border-neutral-800 bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/20">
+            <CardHeader className="p-4 pb-2">
+              <CardDescription className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Total Footprint</CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <div className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{result.total_emissions_tco2e} <span className="text-xs font-normal text-emerald-500">tCO2e</span></div>
+              <p className="text-[10px] text-emerald-500/70 mt-1">Combined facility footprint</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Eligibility Score */}
-      <Card className="mb-6">
+      {/* Eligibility Score Details */}
+      <Card className="border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-md shadow-md">
         <CardHeader>
-          <CardTitle>AI Eligibility Score</CardTitle>
-          <CardDescription>Your readiness for carbon credit monetization</CardDescription>
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <Leaf className="h-5 w-5 text-emerald-500" />
+            AI eligibility & Credits Valuation
+          </CardTitle>
+          <CardDescription>Estimated potential under voluntary carbon registries.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Readiness Score</p>
-              <div className="flex items-center gap-2">
-                <span className="text-3xl font-bold">{score.readiness_score}</span>
-                <span className="text-muted-foreground">/100</span>
+          <div className="grid gap-6 grid-cols-2 md:grid-cols-3 text-sm">
+            <div className="space-y-1">
+              <span className="text-neutral-500 text-xs font-semibold block">Readiness Score</span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold">{score.readiness_score}</span>
+                <span className="text-neutral-400 text-xs">/100</span>
               </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Emissions Rating</p>
+            <div className="space-y-1">
+              <span className="text-neutral-500 text-xs font-semibold block">Emissions Rating</span>
               <Badge
-                variant={
+                variant="outline"
+                className={`text-xs font-bold px-2 py-0.5 border ${
                   score.emissions_rating === "High"
-                    ? "destructive"
+                    ? "bg-red-500/5 border-red-500/30 text-red-600"
                     : score.emissions_rating === "Medium"
-                    ? "default"
-                    : "secondary"
-                }
+                    ? "bg-amber-500/5 border-amber-500/30 text-amber-600"
+                    : "bg-emerald-500/5 border-emerald-500/30 text-emerald-600"
+                }`}
               >
                 {score.emissions_rating}
               </Badge>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Reduction Potential</p>
-              <div className="flex items-center gap-1">
-                <TrendingDown className="h-4 w-4 text-green-600" />
+            <div className="space-y-1">
+              <span className="text-neutral-500 text-xs font-semibold block">Reduction Potential</span>
+              <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                <TrendingDown className="h-4 w-4" />
                 <span className="text-2xl font-bold">{score.reduction_potential_pct}%</span>
               </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Carbon Credit Potential</p>
-              <div className="flex items-center gap-1">
-                <Leaf className="h-4 w-4 text-green-600" />
+            <div className="space-y-1">
+              <span className="text-neutral-500 text-xs font-semibold block">Annual Offset Credits</span>
+              <div className="flex items-baseline gap-1.5 text-neutral-800 dark:text-neutral-200">
                 <span className="text-2xl font-bold">{score.carbon_credit_potential}</span>
-                <span className="text-muted-foreground">credits</span>
+                <span className="text-neutral-400 text-xs">Credits/yr</span>
               </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Projected Revenue</p>
-              <div className="flex items-center gap-1">
-                <IndianRupee className="h-4 w-4" />
+            <div className="space-y-1">
+              <span className="text-neutral-500 text-xs font-semibold block">Projected Revenue</span>
+              <div className="flex items-baseline gap-1 text-emerald-600 dark:text-emerald-400">
+                <IndianRupee className="h-3.5 w-3.5" />
                 <span className="text-2xl font-bold">
                   {score.projected_revenue_inr.toLocaleString("en-IN")}
                 </span>
               </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Confidence Score</p>
+            <div className="space-y-1">
+              <span className="text-neutral-500 text-xs font-semibold block">Verification Confidence</span>
               <span className="text-2xl font-bold">{(score.confidence_score * 100).toFixed(0)}%</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Roadmap */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Carbon Reduction Roadmap</CardTitle>
-          <CardDescription>Your multi-year implementation plan</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {roadmap.map((item) => (
-              <div
-                key={item.year}
-                className="flex items-start gap-4 p-4 rounded-lg border"
-              >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium">
-                  Y{item.year}
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium">{item.recommendation}</p>
-                  <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
-                    <span>Investment: ₹{item.investment_inr.toLocaleString("en-IN")}</span>
-                    <span>Savings: ₹{item.savings_inr.toLocaleString("en-IN")}/yr</span>
-                    <span>Credits: {item.credits_earned}</span>
-                  </div>
-                </div>
+      {/* Stepper Roadmap */}
+      <div>
+        <h2 className="text-lg font-bold text-neutral-800 dark:text-neutral-200 mb-6 flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-emerald-500" />
+          Decarbonization Roadmap
+        </h2>
+        <div className="relative border-l-2 border-neutral-200 dark:border-neutral-800 pl-6 ml-4 space-y-6">
+          {roadmap.map((item) => (
+            <div key={item.year} className="relative">
+              {/* Step circle indicator */}
+              <div className="absolute -left-[37px] top-1 w-6 h-6 rounded-full bg-emerald-600 border-4 border-white dark:border-neutral-950 flex items-center justify-center text-[10px] font-bold text-white shadow-md">
+                {item.year}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              
+              <Card className="border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/30 backdrop-blur-sm">
+                <CardHeader className="p-4 pb-2">
+                  <CardTitle className="text-base font-bold text-neutral-800 dark:text-neutral-200">
+                    {item.recommendation}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-0 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-neutral-500 dark:text-neutral-400 mt-2 font-medium">
+                    <div className="flex items-center gap-1">
+                      <span className="text-neutral-400">Capital Investment:</span>
+                      <span className="text-neutral-700 dark:text-neutral-300">₹{item.investment_inr.toLocaleString("en-IN")}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-neutral-400">Operational Savings:</span>
+                      <span className="text-neutral-700 dark:text-neutral-300">₹{item.savings_inr.toLocaleString("en-IN")}/yr</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-neutral-400">Estimated Carbon Offset:</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">{item.credits_earned} Credits/yr</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

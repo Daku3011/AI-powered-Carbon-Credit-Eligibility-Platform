@@ -1,29 +1,12 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { IndianRupee, TrendingUp, Clock, Leaf } from "lucide-react";
-import { getMarketplaceProjects, type MarketplaceProject } from "@/lib/api";
+import { getMarketplaceProjects } from "@/lib/api";
 
-export default function MarketplacePage() {
-  const [projects, setProjects] = useState<MarketplaceProject[]>([]);
-  const [loading, setLoading] = useState(true);
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    getMarketplaceProjects()
-      .then(setProjects)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="container py-8 text-center">
-        <p className="text-muted-foreground">Loading projects...</p>
-      </div>
-    );
-  }
+export default async function MarketplacePage() {
+  const projects = await getMarketplaceProjects().catch(() => []);
 
   return (
     <div className="container py-8">

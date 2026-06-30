@@ -124,6 +124,8 @@ async def ocr_endpoint(file: UploadFile = File(...)):
         }
     }
 
+MOCK_HISTORY = []
+
 @app.post("/api/calculator/score", response_model=ScoreResponse)
 def calculate_score(req: ScoreRequest):
     # Validation checks for boundary testing
@@ -150,7 +152,7 @@ def calculate_score(req: ScoreRequest):
         rating = "Low"
         readiness = 90
         
-    return ScoreResponse(
+    res = ScoreResponse(
         scope_1_emissions_tco2e=scope_1,
         scope_2_emissions_tco2e=scope_2,
         total_emissions_tco2e=total,
@@ -169,9 +171,15 @@ def calculate_score(req: ScoreRequest):
                 investment_inr=500000,
                 savings_inr=80000,
                 credits_earned=50
-            )
-        ]
+              )
+          ]
     )
+    MOCK_HISTORY.insert(0, res)
+    return res
+
+@app.get("/api/calculator/history", response_model=List[ScoreResponse])
+def get_history():
+    return MOCK_HISTORY
 
 @app.post("/api/chatbot/query", response_model=ChatbotResponse)
 def chatbot_query(req: ChatbotRequest):

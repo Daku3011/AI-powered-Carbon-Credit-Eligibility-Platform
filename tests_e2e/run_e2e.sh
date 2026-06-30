@@ -26,7 +26,7 @@ trap cleanup EXIT INT TERM
 echo "[E2E Runner] Starting mock server on $APP_URL..."
 # Run the mock server in the background
 # We assume mock_server.py is in the tests_e2e directory
-python -m uvicorn tests_e2e.mock_server:app --host "$MOCK_HOST" --port "$MOCK_PORT" > .mock_server.log 2>&1 &
+python3 -m uvicorn tests_e2e.mock_server:app --host "$MOCK_HOST" --port "$MOCK_PORT" > .mock_server.log 2>&1 &
 MOCK_PID=$!
 echo "$MOCK_PID" > "$PID_FILE"
 
@@ -44,7 +44,7 @@ fi
 
 until [ "$ELAPSED" -gt $((TIMEOUT * 2)) ]; do
     if [ "$use_python_check" -eq 1 ]; then
-        if python -c "import sys, httpx; sys.exit(0) if httpx.get('$HEALTH_CHECK_URL').status_code == 200 else sys.exit(1)" 2>/dev/null; then
+        if python3 -c "import sys, httpx; sys.exit(0) if httpx.get('$HEALTH_CHECK_URL').status_code == 200 else sys.exit(1)" 2>/dev/null; then
             break
         fi
     else
@@ -56,7 +56,7 @@ until [ "$ELAPSED" -gt $((TIMEOUT * 2)) ]; do
     ELAPSED=$((ELAPSED + 1))
 done
 
-if [ "$ELAPSED" -gt $((TIMEOUT * 2)) ]; do
+if [ "$ELAPSED" -gt $((TIMEOUT * 2)) ]; then
     echo "[E2E Runner] Error: Mock server did not become healthy within $TIMEOUT seconds."
     echo "[E2E Runner] Mock server logs:"
     cat .mock_server.log

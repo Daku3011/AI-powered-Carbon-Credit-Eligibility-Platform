@@ -1,5 +1,5 @@
 import math
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing import List
 
 class CalculatorMetrics(BaseModel):
@@ -34,12 +34,12 @@ class RoadmapRecommendationSchema(BaseModel):
     savings_inr: float
     credits_earned: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CalculatorResponse(BaseModel):
     scope_1_emissions_tco2e: float
     scope_2_emissions_tco2e: float
+    scope_3_emissions_tco2e: float = 0.0
     total_emissions_tco2e: float
     eligibility_score: EligibilityScore
     roadmap: List[RoadmapRecommendationSchema]

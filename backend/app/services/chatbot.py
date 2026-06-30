@@ -164,29 +164,37 @@ def query_chatbot(user_query: str) -> dict:
         context = "\n\n".join(context_parts)
         sources = sorted(source_set)
 
-        try:
-            from google import genai
-            from google.genai import types
+        if settings.OPENROUTER_API_KEY:
+            try:
+                from openai import OpenAI
 
-            client = genai.Client(api_key=settings.GEMINI_API_KEY)
+                client = OpenAI(
+                    base_url="https://openrouter.ai/api/v1",
+                    api_key=settings.OPENROUTER_API_KEY,
+                )
 
-            prompt = (
-                f"You are an AI Carbon Consultant for Indian organizations. "
-                f"Answer the user's question using ONLY the following context from "
-                f"official carbon market documents. Be specific, helpful, and "
-                f"reference the source documents when relevant.\n\n"
-                f"CONTEXT:\n{context}\n\n"
-                f"USER QUESTION: {user_query}\n\n"
-                f"If the context doesn't contain enough information, say so honestly. "
-                f"Do not fabricate information."
-            )
+                prompt = (
+                    f"You are an AI Carbon Consultant for Indian organizations. "
+                    f"Answer the user's question using ONLY the following context from "
+                    f"official carbon market documents. Be specific, helpful, and "
+                    f"reference the source documents when relevant.\n\n"
+                    f"CONTEXT:\n{context}\n\n"
+                    f"USER QUESTION: {user_query}\n\n"
+                    f"If the context doesn't contain enough information, say so honestly. "
+                    f"Do not fabricate information."
+                )
 
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=[prompt],
-            )
-            answer = response.text.strip()
-        except Exception:
+                response = client.chat.completions.create(
+                    model=settings.OPENROUTER_MODEL,
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                answer = response.choices[0].message.content.strip()
+            except Exception:
+                answer = (
+                    f"Based on the available knowledge base documents, here is what I can tell you: "
+                    f"{context_parts[0][:500]}..."
+                )
+        else:
             answer = (
                 f"Based on the available knowledge base documents, here is what I can tell you: "
                 f"{context_parts[0][:500]}..."

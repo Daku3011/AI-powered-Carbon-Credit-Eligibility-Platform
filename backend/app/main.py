@@ -1,14 +1,18 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from app.core.config import settings
 from app.core.database import SessionLocal, engine, Base
+from app.core.logging_config import setup_logging, log_requests_middleware
 from app.api.calculator import router as calculator_router
 from app.api.marketplace import router as marketplace_router, DEFAULT_PROJECTS
 from app.api.ocr import router as ocr_router
 from app.api.chatbot import router as chatbot_router
 from app.api.reports import router as reports_router
 from app.models.marketplace import MarketplaceProject
+
+# Initialize structured logging
+setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,9 +36,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Register request/response logging middleware
+app.middleware("http")(log_requests_middleware)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -7,7 +7,7 @@ class CalculationRecord(Base):
     __tablename__ = "calculation_records"
 
     id = Column(Integer, primary_key=True, index=True)
-    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    timestamp = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone.utc))
     industry = Column(String, nullable=False)
     
     electricity_kwh = Column(Float, nullable=False)
@@ -17,6 +17,7 @@ class CalculationRecord(Base):
     
     scope_1_emissions_tco2e = Column(Float, nullable=False)
     scope_2_emissions_tco2e = Column(Float, nullable=False)
+    scope_3_emissions_tco2e = Column(Float, nullable=False, default=0.0)
     total_emissions_tco2e = Column(Float, nullable=False)
     
     readiness_score = Column(Integer, nullable=False)

@@ -6,7 +6,8 @@ def calculate_carbon_and_eligibility(req: CalculatorRequest) -> CalculatorRespon
     # 1. Scope Calculations (Round to 2 decimal places)
     scope_1 = round(req.metrics.fuel_diesel_liters * settings.DIESEL_EMISSION_FACTOR, 2)
     scope_2 = round(req.metrics.electricity_kwh * settings.INDIA_GRID_EMISSION_FACTOR, 2)
-    total = round(scope_1 + scope_2, 2)
+    scope_3 = round(req.metrics.waste_kg * settings.WASTE_EMISSION_FACTOR, 2)
+    total = round(scope_1 + scope_2 + scope_3, 2)
 
     # Convert Pydantic metrics back to primitive dict for service
     metrics_dict = req.metrics.model_dump() if hasattr(req.metrics, "model_dump") else req.metrics.dict()
@@ -86,6 +87,7 @@ def calculate_carbon_and_eligibility(req: CalculatorRequest) -> CalculatorRespon
     return CalculatorResponse(
         scope_1_emissions_tco2e=scope_1,
         scope_2_emissions_tco2e=scope_2,
+        scope_3_emissions_tco2e=scope_3,
         total_emissions_tco2e=total,
         eligibility_score=eligibility,
         roadmap=roadmap_schemas

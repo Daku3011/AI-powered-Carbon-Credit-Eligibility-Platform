@@ -17,7 +17,8 @@ def test_carbon_and_eligibility_scoring_with_manufacturing_standard_input(client
     # Check carbon calculations
     assert data["scope_1_emissions_tco2e"] == 1.21
     assert data["scope_2_emissions_tco2e"] == 10.25
-    assert data["total_emissions_tco2e"] == 11.46
+    assert data["scope_3_emissions_tco2e"] == 0.07
+    assert data["total_emissions_tco2e"] == 11.53
     
     # Check eligibility scoring
     score = data["eligibility_score"]
@@ -110,3 +111,25 @@ def test_carbon_calculator_different_industries_emissions_ratings(client):
     assert response.status_code == 200
     data = response.json()
     assert data["eligibility_score"]["emissions_rating"] == "High"
+
+def test_calculator_history(client):
+    # Perform a calculation to seed the database
+    payload = {
+        "industry": "retail",
+        "metrics": {
+            "electricity_kwh": 500.0,
+            "fuel_diesel_liters": 10.0,
+            "waste_kg": 5.0,
+            "operational_hours": 40.0
+        }
+    }
+    client.post("/api/calculator/score", json=payload)
+
+    # Fetch history
+    response = client.get("/api/calculator/history")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) >= 1
+    assert "scope_1_emissions_tco2e" in data[0]
+    assert "scope_2_emissions_tco2e" in data[0]
+    assert "scope_3_emissions_tco2e" in data[0]

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class MarketplaceProjectSchema(BaseModel):
     id: str
@@ -9,5 +9,4 @@ class MarketplaceProjectSchema(BaseModel):
     payback_years: float
     credit_potential: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

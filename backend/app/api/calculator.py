@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -22,6 +23,7 @@ def calculate_score(req: CalculatorRequest, db: Session = Depends(get_db)):
         operational_hours=req.metrics.operational_hours,
         scope_1_emissions_tco2e=response_data.scope_1_emissions_tco2e,
         scope_2_emissions_tco2e=response_data.scope_2_emissions_tco2e,
+        scope_3_emissions_tco2e=response_data.scope_3_emissions_tco2e,
         total_emissions_tco2e=response_data.total_emissions_tco2e,
         readiness_score=response_data.eligibility_score.readiness_score,
         emissions_rating=response_data.eligibility_score.emissions_rating,
@@ -43,3 +45,35 @@ def calculate_score(req: CalculatorRequest, db: Session = Depends(get_db)):
     db.commit()
     
     return response_data
+
+@router.get("/history", response_model=List[CalculatorResponse])
+def get_history(db: Session = Depends(get_db)):
+    records = db.query(CalculationRecord).order_by(CalculationRecord.timestamp.desc()).all()
+    result = []
+    for r in records:
+        eligibility = {
+            "readiness_score": r.readiness_score,
+            "emissions_rating": r.emissions_rating,
+            "reduction_potential_pct": r.reduction_potential_pct,
+            "carbon_credit_potential": r.carbon_credit_potential,
+            "projected_revenue_inr": r.projected_revenue_inr,
+            "confidence_score": r.confidence_score
+        }
+        roadmap = [
+            {
+                "year": item.year,
+                "recommendation": item.recommendation,
+                "investment_inr": item.investment_inr,
+                "savings_inr": item.savings_inr,
+                "credits_earned": item.credits_earned
+            } for item in r.roadmap
+        ]
+        result.append(CalculatorResponse(
+            scope_1_emissions_tco2e=r.scope_1_emissions_tco2e,
+            scope_2_emissions_tco2e=r.scope_2_emissions_tco2e,
+            scope_3_emissions_tco2e=r.scope_3_emissions_tco2e,
+            total_emissions_tco2e=r.total_emissions_tco2e,
+            eligibility_score=eligibility,
+            roadmap=roadmap
+        ))
+    return result

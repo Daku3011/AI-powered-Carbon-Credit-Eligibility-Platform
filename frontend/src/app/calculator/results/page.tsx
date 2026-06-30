@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Download, TrendingDown, Leaf, IndianRupee } from "lucide-react";
 import { calculateScore, exportReport, type ScoreRequest, type ScoreResponse } from "@/lib/api";
 
@@ -46,17 +45,18 @@ export default function CalculatorResultsPage() {
   useEffect(() => {
     const stored = localStorage.getItem("calculatorInput");
     if (!stored) {
-      setLoading(false);
+      setTimeout(() => setLoading(false), 0);
       return;
     }
 
     const parsed = JSON.parse(stored) as ScoreRequest;
-    setInput(parsed);
-
-    calculateScore(parsed)
-      .then(setResult)
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    setTimeout(() => {
+      setInput(parsed);
+      calculateScore(parsed)
+        .then((res) => setResult(res))
+        .catch((err) => setError(err.message))
+        .finally(() => setLoading(false));
+    }, 0);
   }, []);
 
   if (loading) {

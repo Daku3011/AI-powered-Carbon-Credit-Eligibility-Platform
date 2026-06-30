@@ -15,7 +15,7 @@
 | 3 | AI OCR & RAG Chatbot | Implement Gemini API OCR invoice processing and numpy-based RAG chatbot with Indian policy knowledge base | M2 | DONE |
 | 4 | PDF & Excel Reporting | Implement PDF (reportlab) and Excel (openpyxl) report generators | M2 | DONE |
 | 5 | Frontend UI & Dashboard | Build Next.js application with tailored industry questionnaires, benchmarking charts, and chatbot page | M2, M3, M4 | DONE |
-| 6 | E2E Integration & Verification | Integrate frontend with backend, pass all E2E tests, and perform adversarial coverage hardening (Tier 5) | M1, M5 | PLANNED |
+| 6 | E2E Integration & Verification | Integrate frontend with backend, pass all E2E tests, and perform adversarial coverage hardening (Tier 5) | M1, M5 | DONE |
 
 ## Code Layout
 ```

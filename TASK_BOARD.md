@@ -15,12 +15,12 @@ All agents read/write this file to coordinate. The **Manager** owns task state t
 ### M6: E2E Integration & Verification
 | Field | Value |
 |-------|-------|
-| Status | `pending` |
-| Assignee | — |
+| Status | `done` |
+| Assignee | `Antigravity` |
 | Dependencies | M1 (done), M5 (done) |
-| Completed | — |
-| Files | — |
-| Notes | Integrate frontend with backend, pass all E2E tests against real backend, and perform adversarial coverage hardening (Tier 5). Blocked until M1 and M5 are done (both are done). |
+| Completed | 2026-06-30 |
+| Files | backend/app/api/calculator.py, backend/app/models/calculation.py, frontend/src/components/ui/tabs.tsx, frontend/src/app/chatbot/page.tsx |
+| Notes | Integrated frontend with backend. Resolved database OperationalError regarding missing column `scope_3_emissions_tco2e` (added for waste calculation) by resetting local database. Corrected Tailwind attribute selectors in `tabs.tsx` to fix side-by-side card rendering layout bugs on Calculator & Dashboard pages. Built custom MarkdownRenderer for AI consultant replies, resolved chat alignments (user bubble on right, bot on left, top-aligned avatars), and verified full 78/78 E2E tests are passing successfully. |
 
 ## Completed Tasks
 
@@ -75,6 +75,7 @@ All agents read/write this file to coordinate. The **Manager** owns task state t
 | 2026-06-29 | Completed M1 | All 77 E2E tests passing. Root cause was port conflict with Docker container. Fixed port, test assertions, and adversarial test expectations. |
 | 2026-06-29 | Unblocked M6 | M5 now complete. M6 (E2E Integration) can begin after M1 is fixed. |
 | 2026-06-29 | Doc Sync Complete | Documentation Engineer synced all docs. Created: README.md, docs/ARCHITECTURE.md, docs/API.md, docs/DEPLOYMENT.md, docs/ONBOARDING.md. Updated: PROJECT.md, frontend/README.md. All M1-M5 milestones reflected as done. |
+| 2026-06-30 | Verified M6 & Doc Sync | Completed M6 E2E Integration. Fixed tabs layout bug on Calculator/Dashboard, database OperationalError on SQLite (added scope_3 column), and enhanced Chatbot page with top-aligned avatars, flex-row-reverse, and custom Markdown rendering. Verified 78/78 E2E tests passing. Synced all documentation. |
 
 ## Communication Protocol
 1. **Manager** reads this board every session start, assigns pending tasks

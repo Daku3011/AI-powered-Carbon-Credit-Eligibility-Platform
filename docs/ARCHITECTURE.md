@@ -55,7 +55,7 @@ The AI-powered Carbon Intelligence Platform is a full-stack web application desi
 
 ### Services Layer: `backend/app/services/`
 
-- **calculator.py**: Scope 1 & 2 emission calculations, AI eligibility scoring (readiness score, emissions rating, reduction potential, credit potential, confidence score)
+- **calculator.py**: Scope 1 (direct), 2 (indirect electricity) & 3 (indirect waste) emission calculations, AI eligibility scoring (readiness score, emissions rating, reduction potential, credit potential, confidence score)
 - **roadmap.py**: Industry-aware 3-year reduction roadmap generation
 - **ocr.py**: Google Gemini API OCR with JSON extraction and fallback to None
 - **chatbot.py**: numpy-based TF-IDF vector store with embedded Indian carbon market knowledge base; Gemini API-enhanced answer generation with fallback
@@ -72,7 +72,7 @@ The AI-powered Carbon Intelligence Platform is a full-stack web application desi
 ```
 Client POST /api/calculator/score
   -> CalculatorRequest (industry, metrics)
-  -> calculator service: compute scope_1, scope_2, total
+  -> calculator service: compute scope_1, scope_2, scope_3, total
   -> calculator service: compute eligibility_score
   -> roadmap service: generate 3-year plan
   -> persist to SQLite (CalculationRecord + RoadmapRecommendations)
@@ -165,6 +165,7 @@ waste_kg FLOAT
 operational_hours FLOAT
 scope_1_emissions_tco2e FLOAT
 scope_2_emissions_tco2e FLOAT
+scope_3_emissions_tco2e FLOAT
 total_emissions_tco2e FLOAT
 readiness_score INTEGER
 emissions_rating VARCHAR

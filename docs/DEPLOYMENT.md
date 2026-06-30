@@ -153,9 +153,9 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 - **Engine**: SQLite with WAL journal mode
 - **File**: `backend/database.db` (auto-created on first startup)
-- **Schema**: Auto-migrated via `Base.metadata.create_all()` in lifespan handler
-- **Seeding**: Marketplace projects seeded automatically if table is empty
-- **Reset**: Delete `database.db` and restart backend to re-seed
+- **Schema**: Tables are created automatically via `Base.metadata.create_all()` in the lifespan handler on first startup. Note that SQLite does **not** auto-migrate existing tables if new columns (e.g. `scope_3_emissions_tco2e`) are added later.
+- **Seeding**: Marketplace projects seeded automatically if table is empty.
+- **Reset / Schema Migration**: Delete `database.db` and restart the backend to force it to recreate the tables with the updated schema and re-seed the marketplace projects.
 
 ### SQLite Configuration
 
@@ -208,6 +208,10 @@ python3 tests_e2e/run_e2e.py
 ## Troubleshooting
 
 ### Common Issues
+
+**OperationalError: table calculation_records has no column named scope_3_emissions_tco2e**
+- **Cause**: The database schema in the code was updated to include new columns (like Scope 3 waste emissions), but the database already existed on disk. SQLite's schema creation does not update existing tables.
+- **Fix**: Stop the backend, run `rm backend/database.db` to delete the old SQLite database file, and restart the backend. The server will recreate the database with all correct columns and re-seed the marketplace projects.
 
 **Port 8000 already in use**:
 ```bash

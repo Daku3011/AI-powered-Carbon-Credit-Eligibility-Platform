@@ -51,6 +51,7 @@ POST /api/calculator/score
 {
   "scope_1_emissions_tco2e": 1.21,
   "scope_2_emissions_tco2e": 10.25,
+  "scope_3_emissions_tco2e": 0.0,
   "total_emissions_tco2e": 11.46,
   "eligibility_score": {
     "readiness_score": 77,
